@@ -1,0 +1,2 @@
+# revenius
+Reversi reinforcement learning
