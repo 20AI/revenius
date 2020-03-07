@@ -1,12 +1,14 @@
 """Reversi environment."""
 from six import StringIO
 import sys
+import time
 
 import gym
 from gym import spaces
 import numpy as np
 from gym import error
 from gym.utils import seeding
+from IPython.display import clear_output
 
 from .util import make_random_policy
 from .util import get_possible_acts
@@ -99,21 +101,28 @@ class Reversi(gym.Env):
             self.to_play = self.WHITE
         return self.state
 
+    def _step_return(self, reward, done):
+        # return self.state, reward, done, {'info': {'state': self.state}}
+        return self.state, reward, done, {}
+
     def step(self, action):
         """Define step."""
         assert self.to_play == self.plr_color
         if self.done:
-            return self.state, 0., True, {'state': self.state}
+            # return self.state, 0., True, {'state': self.state}
+            return self._step_return(0., True)
         if is_pass_act(self.board_size, action):
             pass
         elif is_resign_act(self.board_size, action):
-            return self.state, -1, True, {'state': self.state}
+            # return self.state, -1., True, {'state': self.state}
+            return self._step_return(-1., True)
         elif not is_valid(self.state, action, self.plr_color):
             if self.illegal_place_mode == 'raise':
                 raise
             elif self.illegal_place_mode == 'lose':
                 self.done = True
-                return self.state, -1., True, {'state': self.state}
+                # return self.state, -1., True, {'state': self.state}
+                return self._step_return(-1., True)
             else:
                 raise error.Error(
                     'Unsupported illegal place action: {}'.format(
@@ -121,25 +130,27 @@ class Reversi(gym.Env):
         else:
             make_place(self.state, action, self.plr_color)
 
-        a = self.opp_policy(self.state, 1 - self.plr_color)
+        _a = self.opp_policy(self.state, 1 - self.plr_color)
 
-        if a is not None:
-            if is_pass_act(self.board_size, a):
+        if _a is not None:
+            if is_pass_act(self.board_size, _a):
                 pass
-            elif is_resign_act(self.board_size, a):
-                return self.state, 1, True, {'state': self.state}
-            elif not is_valid(self.state, a, 1 - self.plr_color):
+            elif is_resign_act(self.board_size, _a):
+                # return self.state, 1, True, {'state': self.state}
+                return self._step_return(1., True)
+            elif not is_valid(self.state, _a, 1 - self.plr_color):
                 if self.illegal_place_mode == 'raise':
                     raise
                 elif self.illegal_place_mode == 'lose':
                     self.done = True
-                    return self.state, 1., True, {'state': self.state}
+                    # return self.state, 1., True, {'state': self.state}
+                    return self._step_return(1., True)
                 else:
                     raise error.Error(
                         'Unsupported illegal place action: {}'.format(
                             self.illegal_place_mode))
             else:
-                make_place(self.state, a, 1 - self.plr_color)
+                make_place(self.state, _a, 1 - self.plr_color)
 
         self.possible_actions = get_possible_acts(
             self.state, self.plr_color)
@@ -147,7 +158,9 @@ class Reversi(gym.Env):
         if self.plr_color == self.WHITE:
             reward = - reward
         self.done = reward != 0
-        return self.state, reward, self.done, {'state': self.state}
+
+        # return self.state, reward, self.done, {'state': self.state}
+        return self._step_return(reward, self.done)
 
     def render(self, mode='human', close=False):
         """Define render."""
@@ -174,4 +187,7 @@ class Reversi(gym.Env):
                 outfile.write(' ' + '-' * (_w * 7 - 1) + '\n')
 
             if mode != 'human':
+                if mode == 'ipython':
+                    time.sleep(0.1)
+                    clear_output(wait=True)
                 return outfile
