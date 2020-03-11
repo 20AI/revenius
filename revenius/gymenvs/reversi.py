@@ -102,26 +102,22 @@ class Reversi(gym.Env):
         return self.state
 
     def _step_return(self, reward, done):
-        # return self.state, reward, done, {'info': {'state': self.state}}
         return self.state, reward, done, {}
 
     def step(self, action):
         """Define step."""
         assert self.to_play == self.plr_color
         if self.done:
-            # return self.state, 0., True, {'state': self.state}
             return self._step_return(0., True)
         if is_pass_act(self.board_size, action):
             pass
         elif is_resign_act(self.board_size, action):
-            # return self.state, -1., True, {'state': self.state}
             return self._step_return(-1., True)
         elif not is_valid(self.state, action, self.plr_color):
             if self.illegal_place_mode == 'raise':
                 raise
             elif self.illegal_place_mode == 'lose':
                 self.done = True
-                # return self.state, -1., True, {'state': self.state}
                 return self._step_return(-1., True)
             else:
                 raise error.Error(
@@ -136,14 +132,12 @@ class Reversi(gym.Env):
             if is_pass_act(self.board_size, _a):
                 pass
             elif is_resign_act(self.board_size, _a):
-                # return self.state, 1, True, {'state': self.state}
                 return self._step_return(1., True)
             elif not is_valid(self.state, _a, 1 - self.plr_color):
                 if self.illegal_place_mode == 'raise':
                     raise
                 elif self.illegal_place_mode == 'lose':
                     self.done = True
-                    # return self.state, 1., True, {'state': self.state}
                     return self._step_return(1., True)
                 else:
                     raise error.Error(
@@ -159,7 +153,6 @@ class Reversi(gym.Env):
             reward = - reward
         self.done = reward != 0
 
-        # return self.state, reward, self.done, {'state': self.state}
         return self._step_return(reward, self.done)
 
     def render(self, mode='human', close=False):
