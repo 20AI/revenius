@@ -11,6 +11,8 @@ from gym.utils import seeding
 from IPython.display import clear_output
 
 from .opponent import make_random_policy
+from .opponent import make_error_policy
+from .opponent import make_dqn_policy
 from .util import get_possible_acts
 from .util import make_place
 from .util import is_pass_act
@@ -25,6 +27,7 @@ class Reversi(gym.Env):
     BLACK = 0
     WHITE = 1
     metadata = {'render.modes': ['ansi', 'human']}
+    model = None
 
     def __init__(
             self, plr_color, opponent, obs_type,
@@ -64,6 +67,10 @@ class Reversi(gym.Env):
 
         self._seed()
 
+    def set_model(self, model):
+        """Set model."""
+        self.opp_policy = make_dqn_policy(model, self.board_size)
+
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
 
@@ -71,6 +78,8 @@ class Reversi(gym.Env):
             if self.opp == 'random':
                 self.opp_policy = make_random_policy(
                     self.np_random, self.board_size)
+            elif self.opp == 'dqn':
+                self.opp_policy = make_error_policy(self.opp)
             else:
                 raise error.Error(
                     'Unrecognized opponent policy {}'.format(self.opp))
