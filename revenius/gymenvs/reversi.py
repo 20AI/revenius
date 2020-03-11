@@ -10,7 +10,7 @@ from gym import error
 from gym.utils import seeding
 from IPython.display import clear_output
 
-from .util import make_random_policy
+from .opponent import make_random_policy
 from .util import get_possible_acts
 from .util import make_place
 from .util import is_pass_act
