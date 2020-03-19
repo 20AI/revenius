@@ -1,8 +1,8 @@
 """Startup test."""
-import gym
 import random
 import sys
 
+import gym
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten
 from keras.optimizers import Adam
