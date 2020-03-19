@@ -100,8 +100,7 @@ class Reversi(gym.Env):
         self.state[1, center_l, center_l] = 1
         self.state[1, center_r, center_r] = 1
         self.to_play = self.BLACK
-        self.possible_actions = get_possible_acts(
-            self.state, self.to_play)
+        self.possible_actions = get_possible_acts(self.state, self.to_play)
         self.done = False
 
         if self.plr_color != self.to_play:
@@ -155,8 +154,7 @@ class Reversi(gym.Env):
             else:
                 make_place(self.state, _a, 1 - self.plr_color)
 
-        self.possible_actions = get_possible_acts(
-            self.state, self.plr_color)
+        self.possible_actions = get_possible_acts(self.state, self.plr_color)
         reward = is_finished(self.state)
         if self.plr_color == self.WHITE:
             reward = - reward

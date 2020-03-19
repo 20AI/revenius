@@ -1,20 +1,19 @@
-"""Startup test."""
-import random
+"""Evaluate sample."""
 import sys
 
-import gym
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten
 from keras.optimizers import Adam
+import gym
 from rl.agents.dqn import DQNAgent
 from rl.policy import EpsGreedyQPolicy
 from rl.memory import SequentialMemory
 
-
 sys.path.append('./')
 
 
-def _get_dqn(env):
+def build_model(env):
+    """Build model."""
     nb_actions = env.action_space.n
 
     model = Sequential()
@@ -26,50 +25,47 @@ def _get_dqn(env):
     model.add(Dense(16))
     model.add(Activation('relu'))
     model.add(Dense(nb_actions, activation="linear"))
+    return model
 
-    memory = SequentialMemory(limit=5, window_length=1)
+
+def build_dqn(model, nb_actions):
+    """Build DQN agent."""
+    memory = SequentialMemory(limit=50000, window_length=1)
+
     policy = EpsGreedyQPolicy(eps=0.001)
     dqn = DQNAgent(model=model, nb_actions=nb_actions, gamma=0.99,
                    memory=memory, nb_steps_warmup=10,
                    target_model_update=1e-2, policy=policy)
     dqn.compile(Adam(lr=1e-3), metrics=['mae'])
-
     return dqn
 
 
-def test_start_env():
+def evaluate(dqn, nb_episodes):
+    """Evaluete dqn."""
+    from revenius.execute import dqn_vs_random
+    rewards = []
+    for _e in range(nb_episodes):
+        env, reward = dqn_vs_random(dqn)
+        # env.render()
+        rewards.append(reward)
+    rewards = rewards
+
+
+def main():
+    """Exec main."""
     import revenius.gymenvs as gymenvs
-    assert gymenvs
+
+    print(gymenvs)
     env = gym.make('Reversi8x8-v0')
 
-    env.reset()
-    enables = env.possible_actions
+    nb_actions = env.action_space.n
+    model = build_model(env)
+    dqn = build_dqn(model, nb_actions)
 
-    action = random.choice(enables)
-    observation, reward, done, info = env.step(action)
+    dqn.fit(env, nb_steps=500, visualize=False, verbose=2)
 
-
-def test_dqn():
-    import revenius.gymenvs as gymenvs
-    assert gymenvs
-    env = gym.make('Reversi8x8-v0')
-    dqn = _get_dqn(env)
-
-    history = dqn.fit(env, nb_steps=5, visualize=False, verbose=2)
-    dqn.test(env, nb_episodes=1, visualize=True)
-
-    print(history)
+    evaluate(dqn, nb_episodes=1000)
 
 
-def test_dqn_policy():
-    import revenius.gymenvs as gymenvs
-    assert gymenvs
-    env = gym.make('Reversi8x8_dqn-v0')
-    dqn_opp = _get_dqn(env)
-    env.set_model(dqn_opp)
-    dqn = _get_dqn(env)
-
-    history = dqn.fit(env, nb_steps=5, visualize=False, verbose=2)
-    dqn.test(env, nb_episodes=1, visualize=True)
-
-    print(history)
+if __name__ == '__main__':
+    main()

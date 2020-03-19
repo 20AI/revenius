@@ -139,9 +139,9 @@ def is_finished(board):
     """Chack game is finished."""
     _d = board.shape[-1]
 
-    plr_score_x, plr_score_y = np.where(board[0, :, :] == 1)
+    plr_score_x, _ = np.where(board[0, :, :] == 1)
     plr_score = len(plr_score_x)
-    opp_score_x, opp_score_y = np.where(board[1, :, :] == 1)
+    opp_score_x, _ = np.where(board[1, :, :] == 1)
     opp_score = len(opp_score_x)
     if plr_score == 0:
         return -1
@@ -157,5 +157,11 @@ def is_finished(board):
             else:
                 return -1
         else:
+            if (get_possible_acts(board, 0) == [board.shape[-1] ** 2 + 1])\
+             and (get_possible_acts(board, 0) == [board.shape[-1] ** 2 + 1]):
+                if plr_score > opp_score:
+                    return 1
+                else:
+                    return -1
             return 0
     return 0
